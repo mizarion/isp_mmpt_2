@@ -5,9 +5,9 @@ import re
 # [x] "1" (season)
 # [x] "2019" (season_year)
 # [x] "5" (season_episodes)
-#  "1" (episode_number)
-#  "1:23:45" (episode_name)
-#  "1:23:45" (episode_original_name)
+# [x] "1" (episode_number)
+# [x] "1:23:45" (episode_name)
+# [x] "1:23:45" (episode_original_name)
 #  "6 мая 2019" (episode_date)
 #  "2" (episode_number)
 #  "Пожалуйста, сохраняйте спокойствие" (episode_name)
@@ -34,12 +34,18 @@ episodes = r'(?P<episodes_count>(?<=<td class=\"news\">)\d+(?=</td>))'
 season = r'(?P<season>(?<=Сезон )\d+(?=</h1>))'
 season_year = r'(?P<season_year>\d+(?=,\s+эпизодов:\s+\d+))'
 season_episodes = r'(?P<season_episodes>(?<=эпизодов:\s)\d+(?=\s*))'
+episode_number = r'(?P<episode_number>(?<=Эпизод\s)\d+)'
+episode_name = r'(?P<episode_name>(?<=<b>).+(?=<[/]b></h1>))' # moviename-big
+episode_original_name = r'(?P<episode_original_name>(?<=episodesOriginalName\">).+(?=<[/]span>))' #episodesOriginalName
 
 patterns = pattern_name \
            + '|' + episodes \
            + '|' + season \
            + '|' + season_year \
-           + '|' + season_episodes
+           + '|' + season_episodes \
+           + '|' + episode_number \
+           + '|' + episode_name \
+           + '|' + episode_original_name
 
 regexp = re.compile(patterns)
 
@@ -50,7 +56,7 @@ for match in regexp.finditer(html):
     for key, value in match.groupdict().items():
         if value is not None:
             start, end = match.span(key)
-            print(html[start: end], key)
+            print('(' + key + ')', '"' + html[start: end] + '"')
     entities.add((start, end, key))
 
 # print(regexp.findall(html))
