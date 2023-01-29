@@ -8,23 +8,10 @@ import re
 # [x] "1" (episode_number)
 # [x] "1:23:45" (episode_name)
 # [x] "1:23:45" (episode_original_name)
-#  "6 мая 2019" (episode_date)
-#  "2" (episode_number)
-#  "Пожалуйста, сохраняйте спокойствие" (episode_name)
-#  "Please Remain Calm" (episode_original_name)
-#  "13 мая 2019" (episode_date)
-#  "3" (episode_number)
-#  "Да разверзнется земля!" (episode_name)
-#  "Open Wide, O Earth" (episode_original_name)
-#  "20 мая 2019" (episode_date)
-#  "4" (episode_number)
-#  "Счастье всего человечества" (episode_name)
-#  "The Happiness of All Mankind" (episode_original_name)
-#  "27 мая 2019" (episode_date)
-#  "5" (episode_number)
-#  "Вечная память" (episode_name)
-#  "Vichnaya Pamyat" (episode_original_name)
-#  "3 июня 2019" (episode_date)
+# [x] "6 мая 2019" (episode_date)
+
+# Final regex:
+# (?P<name>(?<=/\">).*(?=</a></h1></td>))|(?P<episodes_count>(?<=<td class=\"news\">)\d+(?=</td>))|(?P<season>(?<=Сезон )\d+(?=</h1>))|(?P<season_year>\d+(?=,\s+эпизодов:\s+\d+))|(?P<season_episodes>(?<=эпизодов:\s)\d+(?=\s*))|(?P<episode_number>(?<=Эпизод\s)\d+)|(?P<episode_name>(?<=<b>).+(?=<[/]b></h1>))|(?P<episode_original_name>(?<=episodesOriginalName\">).+(?=<[/]span>))|(?P<episode_date>(?<=\">)\d+\s+\w+\s\d{4}(?=<[/]td>))
 
 f = open("task4/1309707.html", "r")
 html = f.read()
@@ -36,7 +23,8 @@ season_year = r'(?P<season_year>\d+(?=,\s+эпизодов:\s+\d+))'
 season_episodes = r'(?P<season_episodes>(?<=эпизодов:\s)\d+(?=\s*))'
 episode_number = r'(?P<episode_number>(?<=Эпизод\s)\d+)'
 episode_name = r'(?P<episode_name>(?<=<b>).+(?=<[/]b></h1>))' # moviename-big
-episode_original_name = r'(?P<episode_original_name>(?<=episodesOriginalName\">).+(?=<[/]span>))' #episodesOriginalName
+episode_original_name = r'(?P<episode_original_name>(?<=episodesOriginalName\">).+(?=<[/]span>))'  # episodesOriginalName
+episode_date = r'(?P<episode_date>(?<=\">)\d+\s+\w+\s\d{4}(?=<[/]td>))'
 
 patterns = pattern_name \
            + '|' + episodes \
@@ -45,7 +33,8 @@ patterns = pattern_name \
            + '|' + season_episodes \
            + '|' + episode_number \
            + '|' + episode_name \
-           + '|' + episode_original_name
+           + '|' + episode_original_name \
+           + '|' + episode_date
 
 regexp = re.compile(patterns)
 
@@ -59,12 +48,12 @@ for match in regexp.finditer(html):
             print('(' + key + ')', '"' + html[start: end] + '"')
     entities.add((start, end, key))
 
-# print(regexp.findall(html))
-# for i in regexp.findall(html):
-#     print(i)
-
-# print(entities, sep='\n')
-# for entity in entities:
-#     print(html[entity[0]:entity[1]], entity[2])
-
 # Assertions
+
+test_episode_date = '<td align="left" class="news" style="border-bottom:1px dotted #ccc;padding:15px 0px;font-size:12px" valign="bottom" width="20%">14 августа 2020</td>'
+answer_episode_date = '14 августа 2020'
+assert regexp.search(test_episode_date).group() == answer_episode_date
+
+test_moviename_big = '''<h1 class="moviename-big" style="font-size:16px;padding:0px;color:#444"><b>Trent Crimm: The Independent</b></h1>'''
+answer_moviename_big = 'Trent Crimm: The Independent'
+assert regexp.search(test_moviename_big).group() == answer_moviename_big
